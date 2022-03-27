@@ -52,6 +52,10 @@ public class Data {
             1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
     };
 
+    static final int[] RightDesRotations = new int[]{
+            1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1, 1
+    };
+
     static final int[] P_Box = new int[]{
             16, 7, 20, 21,
             29, 12, 28, 17,

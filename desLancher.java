@@ -88,5 +88,25 @@ public class desLancher {
         Assert.assertArrayEquals(new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}, test);
 
     }
+    @Test
+    public void testGenerateKey() {
+        Key k = new Key();
+        k.Update();
+        k.setBitM(DesCrypt.permute(k.getInfo(), k.getInfo().length, Data.PC1));
+        int[] test = new int[56];
+        System.arraycopy(k.getInfo(), 0,test,0,56);
+        DesCrypt.LeftShift(k, 1);
+        DesCrypt.RightShift(k, 1);
+        Assert.assertArrayEquals(test, k.getInfo());
+        DesCrypt.LeftShift(k, 2);
+        DesCrypt.RightShift(k, 2);
+        Assert.assertArrayEquals(test, k.getInfo());
+        DesCrypt.LeftShift(k, 1);
+        DesCrypt.LeftShift(k, 2);
+        DesCrypt.RightShift(k, 1);
+        DesCrypt.RightShift(k, 2);
+        Assert.assertArrayEquals(test, k.getInfo());
+
+    }
 
 }

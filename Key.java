@@ -15,6 +15,6 @@ public class Key extends Message implements DesInfo{
     public void Update() {
         load();
         CharToBinary();
-        DesCrypt.permute(bitM, bitM.length, Data.PC1);
+        this.setBitM(DesCrypt.permute(bitM, bitM.length, Data.PC1));
     }
 }

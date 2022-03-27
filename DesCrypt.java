@@ -1,4 +1,6 @@
 package DES;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class DesCrypt {
@@ -149,18 +151,20 @@ public class DesCrypt {
     //  加密主函数
     public static void encrypt(Message m, Key k, boolean encrypt) {
 
-        m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IP));
+        //m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IP));
 
         int[] LPT = new int[32];
         int[] RPT = new int[32];
         System.arraycopy(m.getInfo(), 0, LPT, 0, 32);
         System.arraycopy(m.getInfo(), 32, RPT, 0, 32);
 
+        int[] DesKey = permute(k.getInfo(), k.getInfo().length, Data.PC2);
+
         for ( int i = 1 ; i <= 16 ; i++ ) {
-            int[] DesKey = generateKey(k, i-1,encrypt);
-            int[] temp = RPT;
+            int[] temp = Arrays.copyOf(RPT, RPT.length);
             RPT = XOR( LPT, F(RPT, DesKey));
             LPT = temp;
+            DesKey = generateKey(k, i-1,encrypt);
         }
         m.setBitM(Merge(RPT, LPT));
         m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IPReverse));
@@ -173,17 +177,20 @@ public class DesCrypt {
     }
 
     public static void main(String[] args) {
-        Key k = new Key();
-        Message m = new Message();
-        m.Update(); k.Update();
-        System.out.println("初始化的矩阵");
-        m.print();
-        encrypt(m, k, true);
-        System.out.println("第一轮加密后的矩阵");
-        m.print();
-        encrypt(m, k, false);
-        System.out.println("第一轮解密后的矩阵");
-        m.print();
+            Key k = new Key();
+            Message m = new Message();
+            m.Update();
+            k.Update();
+            System.out.println("初始化的矩阵");
+            m.print();
+            LeftShift(k, 1);
+            encrypt(m, k, true);
+            System.out.println("第一轮加密后的矩阵");
+            m.print();
+            encrypt(m, k, false);
+            System.out.println("第一轮解密后的矩阵");
+            RightShift(k, 1);
+            m.print();
     }
 
 }

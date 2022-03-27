@@ -109,4 +109,19 @@ public class desLancher {
 
     }
 
+    @Test
+    public void testMain() {
+        Key k = new Key();
+        Message m = new Message();
+        m.Update();
+        k.Update();
+        DesCrypt.LeftShift(k, 1);
+        DesCrypt.encrypt(m, k, true);
+        DesCrypt.encrypt(m, k, false);
+        DesCrypt.RightShift(k, 1);
+        Key k2 = new Key();
+        k2.Update();
+        Assert.assertArrayEquals(k.getInfo(), k2.getInfo());
+    }
+
 }

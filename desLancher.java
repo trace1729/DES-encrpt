@@ -2,7 +2,6 @@ package DES;
 
 import org.junit.Test;
 import org.junit.Assert;
-
 import java.util.Arrays;
 
 public class desLancher {
@@ -88,40 +87,16 @@ public class desLancher {
         Assert.assertArrayEquals(new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}, test);
 
     }
-    @Test
-    public void testGenerateKey() {
-        Key k = new Key();
-        k.Update();
-        k.setBitM(DesCrypt.permute(k.getInfo(), k.getInfo().length, Data.PC1));
-        int[] test = new int[56];
-        System.arraycopy(k.getInfo(), 0,test,0,56);
-        DesCrypt.LeftShift(k, 1);
-        DesCrypt.RightShift(k, 1);
-        Assert.assertArrayEquals(test, k.getInfo());
-        DesCrypt.LeftShift(k, 2);
-        DesCrypt.RightShift(k, 2);
-        Assert.assertArrayEquals(test, k.getInfo());
-        DesCrypt.LeftShift(k, 1);
-        DesCrypt.LeftShift(k, 2);
-        DesCrypt.RightShift(k, 1);
-        DesCrypt.RightShift(k, 2);
-        Assert.assertArrayEquals(test, k.getInfo());
-
-    }
 
     @Test
-    public void testMain() {
+    public void testKey() {
         Key k = new Key();
-        Message m = new Message();
-        m.Update();
         k.Update();
-        DesCrypt.LeftShift(k, 1);
-        DesCrypt.encrypt(m, k, true);
-        DesCrypt.encrypt(m, k, false);
-        DesCrypt.RightShift(k, 1);
-        Key k2 = new Key();
-        k2.Update();
-        Assert.assertArrayEquals(k.getInfo(), k2.getInfo());
+        DesCrypt.generateKey(k);
+        for ( int i = 0 ; i < 16 ; i++) {
+            System.out.println(Arrays.toString(Data.deskey[i]));
+        }
     }
+
 
 }

@@ -1,5 +1,4 @@
 package DES;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -8,21 +7,6 @@ public class DesCrypt {
     static Scanner scanner = new Scanner(System.in);
 
     static StringBuilder content = new StringBuilder();
-
-//    // 读取明文输入
-//    public void readInput() {
-//        // what data structure i should use to fulfill the demand taking 8 character once a time;
-//        char[] input = scanner.next().toLowerCase().replace(" ", "").toCharArray();
-//        m = new Message(input);
-//        m.Update();
-//    }
-//
-//    // 读取密匙
-//    public void readKey() {
-//        char[] input = scanner.next().toLowerCase().replace(" ", "").toCharArray();
-//        k = new Key(input);
-//        k.Update();
-//    }
 
     // 对 size大小的 bits矩阵（实际是一维数组）进行 对应的置换
     public static int[] permute(int[] bits, int size_t, int[] permuteMatrix) {
@@ -55,38 +39,17 @@ public class DesCrypt {
             m[55] = a29; m[54] = a28;
         }
     }
-    public static void RightShift(Key k, int shift) {
-        int[] m = k.getInfo();
-        if( shift == 1 ) {
-            int a27 = m[27], a55 = m[55];
-            System.arraycopy(m, 0, m, 1,27);
-            m[0] = a27;
-            System.arraycopy(m,28,m,29,27);
-            m[28] = a55;
-        }
-        if( shift == 2 ) {
-            int a27 = m[27], a26 = m[26];
-            int a55 = m[55], a54 = m[54];
-            System.arraycopy(m, 0, m, 2,26);
-            m[0] = a26; m[1] = a27;
-            System.arraycopy(m,28,m,30,26);
-            m[28] = a54; m[29] = a55;
-        }
-    }
-    // 第round的密匙生成函数
-    public static int[] generateKey(Key k, int round, boolean encrypt) {
-            int shift = 0;
-            if( encrypt ) {
-                shift = Data.DesRotations[round];
-                LeftShift(k, shift); // 永久更改的
-                return permute(k.getInfo(), k.getInfo().length, Data.PC2); // 暂时更改的
-            } else {
-                shift = Data.RightDesRotations[round];
-                RightShift(k, shift); // 永久更改的
-                return permute(k.getInfo(), k.getInfo().length, Data.PC2); // 暂时更改的
-            }
 
+    // 第round的密匙生成函数
+    public static void generateKey(Key k) {
+
+        for( int i = 0; i < 16 ; i++ ) {
+            int shift = Data.DesRotations[i];
+            LeftShift(k, shift);
+            Data.deskey[i] = permute(k.getInfo(), k.getInfo().length, Data.PC2);
+        }
     }
+
     // 返回两个整形数组（大小相等）的异或结果
     public static int[] XOR(int[] m, int[] DesKey) {
         if( m.length != DesKey.length ) {
@@ -136,12 +99,12 @@ public class DesCrypt {
 
     }
     // 加密完成 将 合并 左32位 和右32位
-    public static int[] Merge( int[] LPT, int[] RPT) {
+    public static int[] Merge( int[] a, int[] b) {
         int []t = new int[64];
-        System.arraycopy(LPT, 0, t, 0, 32);
-        System.arraycopy(RPT, 0, t, 32, 32);
+        System.arraycopy(a, 0, t, 0, 32);
+        System.arraycopy(b, 0, t, 32, 32);
         return t;
-    }
+}
     // 将加密结果暂存在 content 中
     public static void save( char[] mess) {
         for (char ch : mess) {
@@ -151,22 +114,27 @@ public class DesCrypt {
     //  加密主函数
     public static void encrypt(Message m, Key k, boolean encrypt) {
 
-        //m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IP));
+        m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IP));
 
-        int[] LPT = new int[32];
-        int[] RPT = new int[32];
-        System.arraycopy(m.getInfo(), 0, LPT, 0, 32);
-        System.arraycopy(m.getInfo(), 32, RPT, 0, 32);
+        int[] LPT_old = new int[32];
+        int[] RPT_old = new int[32];
+        int[] desKey;
+        System.arraycopy(m.getInfo(), 0, LPT_old, 0, 32);
+        System.arraycopy(m.getInfo(), 32, RPT_old, 0, 32);
 
-        int[] DesKey = permute(k.getInfo(), k.getInfo().length, Data.PC2);
+        for ( int i = 0 ; i < 16 ; i++ ) {
+            if( encrypt )
+                desKey = Data.deskey[i];
+            else
+                desKey = Data.deskey[15-i];
 
-        for ( int i = 1 ; i <= 16 ; i++ ) {
-            int[] temp = Arrays.copyOf(RPT, RPT.length);
-            RPT = XOR( LPT, F(RPT, DesKey));
-            LPT = temp;
-            DesKey = generateKey(k, i-1,encrypt);
+            int[] LPT_new = Arrays.copyOf(RPT_old, RPT_old.length);
+            int[] RPT_new = XOR( LPT_old, F(RPT_old, desKey));
+            LPT_old = LPT_new;
+            RPT_old = RPT_new;
+
         }
-        m.setBitM(Merge(RPT, LPT));
+        m.setBitM(Merge(RPT_old, LPT_old));
         m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IPReverse));
     }
 
@@ -179,17 +147,18 @@ public class DesCrypt {
     public static void main(String[] args) {
             Key k = new Key();
             Message m = new Message();
-            m.Update();
             k.Update();
+            m.Update();
+            DesCrypt.generateKey(k);
+
             System.out.println("初始化的矩阵");
             m.print();
-            LeftShift(k, 1);
             encrypt(m, k, true);
             System.out.println("第一轮加密后的矩阵");
             m.print();
+
             encrypt(m, k, false);
             System.out.println("第一轮解密后的矩阵");
-            RightShift(k, 1);
             m.print();
     }
 

@@ -1,7 +1,7 @@
 package DES;
 
 
-public class Message implements DesInfo{
+public class Message {
     final char COMPLEMENT = 'x';
     // store all info
     char[] data;
@@ -14,7 +14,6 @@ public class Message implements DesInfo{
     int surplus;
     int round;
 
-    @Override
     public int[] getInfo() {
         return bitM;
     }
@@ -102,12 +101,29 @@ public class Message implements DesInfo{
         }
     }
 
+    public void test() {
+        bitM = new int[]{
+                0, 0, 0, 0, 0, 0, 0, 1,
+                0, 0, 1, 0, 0, 0, 1, 1,
+                0, 1, 0, 0, 0, 1, 0, 1,
+                0, 1, 1, 0, 0, 1, 1, 1,
+                1, 0, 0, 0, 1, 0, 0, 1,
+                1, 0, 1, 0, 1, 0, 1, 1,
+                1, 1, 0, 0, 1, 1, 0, 1,
+                1, 1, 1, 0, 1, 1, 1, 1
+        };
+    }
+
     public void print() {
         for( int i = 0 ; i < 8 ; i ++) {
             for( int j = 0 ; j < 8 ; j ++ ) {
-                System.out.printf("%d ", bitM[i*8 + j] );
+                System.out.printf("%d ",bitM[i*8 + j] );
             }
-            System.out.println();
+            if( i == 3 || i == 7)
+                System.out.println();
+            else
+                System.out.print(" ");
         }
+        System.out.println();
     }
 }

@@ -9,58 +9,58 @@ public class desLancher {
     public void testIp() {
         Message m = new Message();
         m.Update();
-        int[] arr = new int[64];
-        System.arraycopy(m.bitM, 0, arr, 0 ,64);
+        byte[] aby = new byte[64];
+        System.arraycopy(m.getBitM(), 0, aby, 0 ,64);
 
-        m.setBitM(DesCrypt.permute(m.getInfo(), m.getInfo().length, Data.IP));
-        m.setBitM(DesCrypt.permute(m.getInfo(), m.getInfo().length, Data.IPReverse));
+        m.setBitM(DesCrypt.permute(m.getBitM(), m.getBitM().length, Data.IP));
+        m.setBitM(DesCrypt.permute(m.getBitM(), m.getBitM().length, Data.IPReverse));
 
-        Assert.assertArrayEquals(m.getInfo(), arr);
+        Assert.assertArrayEquals(m.getBitM(), aby);
     }
     @Test
     public void testLeftShift() {
         Key k = new Key();
-        int k0 = k.getInfo()[0];
-        int k27 = k.getInfo()[27];
-        int k28 = k.getInfo()[28];
-        int k55 = k.getInfo()[55];
+        int k0 = k.getBitM()[0];
+        int k27 = k.getBitM()[27];
+        int k28 = k.getBitM()[28];
+        int k55 = k.getBitM()[55];
 
         DesCrypt.LeftShift(k, 1);
-        Assert.assertEquals(k0, k.getInfo()[27]);
-        Assert.assertEquals(k27, k.getInfo()[0]);
-        Assert.assertEquals(k28, k.getInfo()[55]);
-        Assert.assertEquals(k55, k.getInfo()[28]);
+        Assert.assertEquals(k0, k.getBitM()[27]);
+        Assert.assertEquals(k27, k.getBitM()[0]);
+        Assert.assertEquals(k28, k.getBitM()[55]);
+        Assert.assertEquals(k55, k.getBitM()[28]);
     }
 
     @Test
     public void testXOR() {
-        int[] a = new int[]{0, 1, 0, 1, 0, 1};
-        int[] b = new int[]{1, 0, 1, 0, 0, 1};
+        byte[] a = new byte[]{0, 1, 0, 1, 0, 1};
+        byte[] b = new byte[]{1, 0, 1, 0, 0, 1};
 
-        int[] res = DesCrypt.XOR(a, b);
+        byte[] res = DesCrypt.XOR(a, b);
         System.out.println(Arrays.toString(res));
     }
 
     @Test
     public void testToBinary() {
         // input a digit and check the six digit outcome( check the array)
-        int[] test1 = new int[] {0,1,0,1,0,1};
-        int[] test2 = new int[] {1,0,0,0,1,0};
-        int[] test4 = new int[] {1,0,0,0,0,0};
+        byte[] test1 = new byte[] {0,1,0,1,0,1};
+        byte[] test2 = new byte[] {1,0,0,0,1,0};
+        byte[] test4 = new byte[] {1,0,0,0,0,0};
         Assert.assertEquals(DesCrypt.ToBinary(test1, 0), 21);
         Assert.assertEquals(DesCrypt.ToBinary(test2, 0), 34);
         Assert.assertEquals(DesCrypt.ToBinary(test4, 0), 32);
-        int[] test3 = new int[] {0,1,0,1,0,1,1,0,0,0,1,0,0,1,0,1,0,1,1,0,0,0,1,0 };
+        byte[] test3 = new byte[] {0,1,0,1,0,1,1,0,0,0,1,0,0,1,0,1,0,1,1,0,0,0,1,0 };
         Assert.assertEquals(DesCrypt.ToBinary(test3, 0), 21);
         Assert.assertEquals(DesCrypt.ToBinary(test3, 3), 34);
     }
 
     @Test
     public void testSBoxConvert() {
-        int[] ans1 = new int[] {1,1,1,1};
-        int[] ans2 = new int[] {1,0,1,0};
-        int[] ans4 = new int[] {1,0,0,0};
-        int[] test = new int[4];
+        byte[] ans1 = new byte[] {1,1,1,1};
+        byte[] ans2 = new byte[] {1,0,1,0};
+        byte[] ans4 = new byte[] {1,0,0,0};
+        byte[] test = new byte[4];
         DesCrypt.SBoxConvert(test, 15, 0);
         Assert.assertArrayEquals(test, ans1);
         DesCrypt.SBoxConvert(test, 10, 0);
@@ -68,8 +68,8 @@ public class desLancher {
         DesCrypt.SBoxConvert(test, 8, 0);
         Assert.assertArrayEquals(test, ans4);
 
-        int[] test2 = new int[16];
-        int[] ans3 = new int[] {
+        byte[] test2 = new byte[16];
+        byte[] ans3 = new byte[] {
            1,1,1,1, 1,1,1,1 ,1,0,1,0, 1,0,1,0
         } ;
         DesCrypt.SBoxConvert(test2, 15, 0);
@@ -88,15 +88,7 @@ public class desLancher {
 
     }
 
-    @Test
-    public void testKey() {
-        Key k = new Key();
-        k.Update();
-        DesCrypt.generateKey(k);
-        for ( int i = 0 ; i < 16 ; i++) {
-            System.out.println(Arrays.toString(Data.deskey[i]));
-        }
-    }
+
 
 
 }

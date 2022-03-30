@@ -10,28 +10,16 @@ public class Key extends Message {
     }
 
     private void load() {
-        System.arraycopy(data, idx, buf, 0, 8);
+        System.arraycopy(data, 0, buf, 0, 8);
+        // 修改编码方式后需要修改长度
     }
 
     public void Update() {
         load();
-        CharToBinary();
+        CharToBinary(); // 如果要修改编码方式 那么 需要修改这个函数
         this.setBitM(DesCrypt.permute(bitM, bitM.length, Data.PC1));
     }
 
-    public void test() {
-        bitM = new int[]{
-                0, 0, 0, 1, 0, 0, 1, 1,
-                0, 0, 1, 1, 0, 1, 0, 0,
-                0, 1, 0, 1, 0, 1, 1, 1,
-                0, 1, 1, 1, 1, 0, 0, 1,
-                1, 0, 0, 1, 1, 0, 1, 1,
-                1, 0, 1, 1, 1, 1, 0, 0,
-                1, 1, 0, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 0, 0, 0, 1
-        };
-
-    }
 
     public void print() {
         for( int i = 0 ; i < 8 ; i ++) {

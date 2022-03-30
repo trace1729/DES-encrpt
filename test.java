@@ -15,14 +15,8 @@ public class test {
         a = new int[1000];
     }
     public static void main(String [] args) {
-        int[] a = new int[10];
-        a = new int[]{0,1} ;
-        test(a);
-        System.out.println(PC1.length);
-        b[0] = new int[]{1,2,3};
-        b[1] = new int[]{1,2,3};
-
-        System.out.println(b[0][1] + b[1][0]);
-
+        StringBuilder st = new StringBuilder("abcd");
+        st.replace(st.length()-1, st.length(), "");
+        System.out.println(st.toString());
     }
 }

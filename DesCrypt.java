@@ -1,20 +1,15 @@
 package DES;
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class DesCrypt {
 
-    static Scanner scanner = new Scanner(System.in);
-
-    static StringBuilder content = new StringBuilder();
-
     // 对 size大小的 bits矩阵（实际是一维数组）进行 对应的置换
-    public static int[] permute(int[] bits, int size_t, int[] permuteMatrix) {
+    public static byte[] permute(byte[] bits, int size_t, int[] permuteMatrix) {
         int size = permuteMatrix.length;
-        int[] copy = new int[size_t];
+        byte[] copy = new byte[size_t];
         System.arraycopy(bits, 0, copy, 0, size_t);
 
-        bits = new int[size];
+        bits = new byte[size];
         for( int i = 0 ; i < size ; i ++) {
             bits[i] = copy[permuteMatrix[i]-1];
         }
@@ -22,17 +17,17 @@ public class DesCrypt {
     }
     // 对密匙进行左移
     public static void LeftShift(Key k, int shift) {
-        int[] m = k.getInfo();
+        byte[] m = k.getBitM();
         if( shift == 1 ) {
-            int a0 = m[0], a28 = m[28];
+            byte a0 = m[0], a28 = m[28];
             System.arraycopy(m, 1, m, 0,27);
             m[27] = a0;
             System.arraycopy(m,29,m,28,27);
             m[55] = a28;
         }
         if( shift == 2 ) {
-            int a0 = m[0], a1 = m[1];
-            int a28 = m[28], a29 = m[29];
+            byte a0 = m[0], a1 = m[1];
+            byte a28 = m[28], a29 = m[29];
             System.arraycopy(m, 2, m, 0,26);
             m[27] = a1; m[26] = a0;
             System.arraycopy(m,30,m,28,26);
@@ -46,25 +41,25 @@ public class DesCrypt {
         for( int i = 0; i < 16 ; i++ ) {
             int shift = Data.DesRotations[i];
             LeftShift(k, shift);
-            Data.deskey[i] = permute(k.getInfo(), k.getInfo().length, Data.PC2);
+            Data.deskey[i] = permute(k.getBitM(), k.getBitM().length, Data.PC2);
         }
     }
 
     // 返回两个整形数组（大小相等）的异或结果
-    public static int[] XOR(int[] m, int[] DesKey) {
+    public static byte[] XOR(byte[] m, byte[] DesKey) {
         if( m.length != DesKey.length ) {
             System.out.println(m.length + ' ' + DesKey.length);
             return null;
         }
         int size = m.length;
-        int[] res = new int[size];
+        byte[] res = new byte[size];
         for( int i = 0 ; i < size ; i ++ ) {
-            res[i] = m[i]^DesKey[i];
+            res[i] = (byte)(m[i]^DesKey[i]);
         }
         return res;
     }
     // 将48位分成 8 个 6位
-    public static int ToBinary(int[] RPT, int round) {
+    public static int ToBinary(byte[] RPT, int round) {
         int sixBit = 0;
         for( int i = round*6 ; i < round*6 + 6 ; i ++ ) {
                 sixBit = sixBit << 1 | RPT[i];
@@ -72,15 +67,15 @@ public class DesCrypt {
         return sixBit;
     }
     // 将s盒读取的输入转化为 4位2 进制表示
-    public static void SBoxConvert(int[] RPT_32, int num, int round) {
+    public static void SBoxConvert(byte[] RPT_32, int num, int round) {
         for( int i = 3, j = 4*round ; i >= 0 ; i --, j++ ) {
-            RPT_32[j] = (num >> i) & 1;
+            RPT_32[j] = (byte)((num >> i) & 1);
         }
     }
     // s盒 将48位 -> 32位
-    public static int[] SBox (int[] RPT) {
+    public static byte[] SBox (byte[] RPT) {
 
-        int []RPT_32 = new int[32];
+        byte []RPT_32 = new byte[32];
         for( int i = 0 ; i < 8 ; i ++ ) {
             int sixBit = ToBinary(RPT, i);
             SBoxConvert(RPT_32, Data.S[i][sixBit], i);
@@ -89,7 +84,7 @@ public class DesCrypt {
     }
 
     // f函数
-    public static int[] F(int[] RPT, int[] DesKey ) {
+    public static byte[] F(byte[] RPT, byte[] DesKey ) {
 
         RPT = permute(RPT, RPT.length, Data.E);
         RPT = XOR(RPT, DesKey);
@@ -99,28 +94,23 @@ public class DesCrypt {
 
     }
     // 加密完成 将 合并 左32位 和右32位
-    public static int[] Merge( int[] a, int[] b) {
-        int []t = new int[64];
+    public static byte[] Merge( byte[] a, byte[] b) {
+        byte []t = new byte[64];
         System.arraycopy(a, 0, t, 0, 32);
         System.arraycopy(b, 0, t, 32, 32);
         return t;
-}
-    // 将加密结果暂存在 content 中
-    public static void save( char[] mess) {
-        for (char ch : mess) {
-            content.append(ch);
-        }
     }
     //  加密主函数
     public static void encrypt(Message m, Key k, boolean encrypt) {
+        DesCrypt.generateKey(k);
 
-        m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IP));
+        m.setBitM(permute(m.getBitM(), m.getBitM().length, Data.IP));
 
-        int[] LPT_old = new int[32];
-        int[] RPT_old = new int[32];
-        int[] desKey;
-        System.arraycopy(m.getInfo(), 0, LPT_old, 0, 32);
-        System.arraycopy(m.getInfo(), 32, RPT_old, 0, 32);
+        byte[] LPT_old = new byte[32];
+        byte[] RPT_old = new byte[32];
+        byte[] desKey;
+        System.arraycopy(m.getBitM(), 0, LPT_old, 0, 32);
+        System.arraycopy(m.getBitM(), 32, RPT_old, 0, 32);
 
         for ( int i = 0 ; i < 16 ; i++ ) {
             if( encrypt )
@@ -128,38 +118,45 @@ public class DesCrypt {
             else
                 desKey = Data.deskey[15-i];
 
-            int[] LPT_new = Arrays.copyOf(RPT_old, RPT_old.length);
-            int[] RPT_new = XOR( LPT_old, F(RPT_old, desKey));
+            byte[] LPT_new = Arrays.copyOf(RPT_old, RPT_old.length);
+            byte[] RPT_new = XOR( LPT_old, F(RPT_old, desKey));
             LPT_old = LPT_new;
             RPT_old = RPT_new;
 
+
         }
         m.setBitM(Merge(RPT_old, LPT_old));
-        m.setBitM(permute(m.getInfo(), m.getInfo().length, Data.IPReverse));
-    }
-
-
-    public static void print(Message m) {
-        m.print();
-        System.out.println();
+        m.setBitM(permute(m.getBitM(), m.getBitM().length, Data.IPReverse));
     }
 
     public static void main(String[] args) {
-            Key k = new Key();
-            Message m = new Message();
-            k.Update();
+
+        StringBuilder st = new StringBuilder(100);
+        Key k = new Key(); k.Update();
+        Message m = new Message();
+        while( !m.checkFull() ) {
             m.Update();
-            DesCrypt.generateKey(k);
-
-            System.out.println("初始化的矩阵");
-            m.print();
             encrypt(m, k, true);
-            System.out.println("第一轮加密后的矩阵");
-            m.print();
-
-            encrypt(m, k, false);
-            System.out.println("第一轮解密后的矩阵");
-            m.print();
+            char[] temp = m.BinaryToChar();
+            for( char t : temp) {
+                st.append(t);
+            }
+        }
+        // 密文需要删除 x 加密后的字符
+        // 但是解密的时候 需要加上 x 加密后的字符才能 解密回去
+        // 不需要担心这个问题 加密的密文格式是由自己确定的 只要能解密回去就可以
+        Message m2 = new Message(st.toString().toCharArray());
+        while( !m2.checkFull() ) {
+            m2.Update();
+            encrypt(m2, k, false);
+            char[] temp = m2.BinaryToChar();
+            for( char t : temp) {
+                st.append(t);
+            }
+        }
+        st.replace(st.length() - m.surplus, st.length(), "");
+        System.out.println(m2.surplus +  " " + st.toString());
     }
 
 }
+

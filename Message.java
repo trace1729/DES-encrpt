@@ -1,6 +1,9 @@
 package DES;
 
 
+import javax.print.DocFlavor;
+import java.awt.*;
+
 public class Message {
     final char COMPLEMENT = 'x';
     // store all info
@@ -23,85 +26,152 @@ public class Message {
     }
 
     Message () {
-        data = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h','a', 'b', 'c', 'd'};
-        buf = new char[8];
+        String m = "ewekwekwkekwkekwkekwekwe";
+        data = m.toCharArray();
+        buf = new char[16]; // encode 4bit  decode need 16
+        // bit
         bitM = new byte[64];
         idx = 0;
-        surplus = 8 - (data.length % 8);
+        surplus = 4 - (data.length % 4);
         round = 0;
     }
 
     Message (char[] d) {
         data = d;
-        buf = new char[8];
+        buf = new char[16];
         bitM = new byte[64];
         idx = 0;
-        surplus = 8 - (d.length % 8) ; // 15 % 8 = 7 (8-7 = 1)
+        surplus = 4 - (d.length % 4) ; // 15 % 8 = 7 (8-7 = 1)
         round = 0;
     }
 
-    private void load() {
+    private void encode_load() {
         if( idx > data.length ) {
             return;
         }
-        if (idx + 8 <= data.length) { // 如果剩下的密文 字符大于等于 8
-            System.arraycopy(data, idx, buf, 0, 8);
-            idx += 8;
+        if (idx + 4 <= data.length) { // 如果剩下的密文 字符大于等于 8
+            System.arraycopy(data, idx, buf, 0, 4);
+            idx += 4;
             round += 1;
         } else { // 如果剩下的字符小与等于 8
             int j = 0;
             for (int i = idx; i < data.length ; i++, j++) {
                 buf[j] = data[i];  //
             }
-            while (j < 8) buf[j++] = COMPLEMENT;
+            while (j < 4) buf[j++] = COMPLEMENT;
             idx = data.length - 1;
             round += 1;
         }
 
     }
 
-    void DecimalToBinary(char ch, int idx) {
-        int Decimal = (int)ch;
-        for( int i = 7, j = 0; i >= 0 ; i--, j++ ) {
-            bitM[idx*8 + j] = (byte)((Decimal >> i) & 1);
+    // 不需要考虑位数不足的情况，在加密的时候已经补齐
+    private void decode_load() {
+        if( idx >= data.length ) {
+            return;
+        }
+        if (idx + 16 <= data.length) { // 如果剩下的密文 字符大于等于 4
+            System.arraycopy(data, idx, buf, 0, 16);
+            idx += 16;
+            round += 1;
         }
     }
 
-    void CharToBinary() {
-        for (int i = 0; i < 8; i++) {
-            DecimalToBinary(buf[i], i);
+    private void convertUnicodeToBinary(char ch, int round) {
+        for( int i = 15, j = 0 ; i >= 0 ; i--, j++ ) {
+            bitM[ round*16+j ] = (byte)(ch >> i & 1);
         }
     }
 
-    private int BinaryToDecimal(int l, int r) {
-        int decimal = 0;
-        for( int i = l ; i < r ; i ++ ) {
-            decimal = decimal << 1 | bitM[i];
+
+    public void phrase_encode_message() {
+        for( int i = 0 ; i < 4 ; i ++ ) {
+            convertUnicodeToBinary(buf[i], i);
         }
-        return decimal;
     }
 
-    /**
-    将bitM的数组转化为字符
-     */
-    char[] BinaryToChar() {
-        char[] t = new char[8];
-        for (int i = 0; i < 8; i++) {
-            char ch = (char)BinaryToDecimal(8*i, 8*i+8);
-            t[i] = ch;
+    private char convertBinaryToHex(int l, int r) {
+        int hex_value = 0;
+        for(int i = l ; i < r ; i ++) {
+            hex_value = hex_value << 1 | bitM[i];
         }
-        return t;
+        return Data.hex[hex_value];
     }
 
-    boolean checkFull() {
-        return round >= (int)Math.ceil(data.length / 8.0); // 向上取整
+    public char[] encodeOutput() {
+        char[] output = new char[16];
+        for( int i = 0 ; i < 16 ; i ++) {
+            output[i] = convertBinaryToHex(i*4, i*4+4);
+        }
+        return output;
     }
 
-    public void Update() {
-        if( !checkFull() ) {
-            load();
-            CharToBinary();
+    private char convertBinaryToUnicode(int l, int r) {
+        int unicode_value = 0;
+        for (int i = l ; i < r ; i ++) {
+            unicode_value = unicode_value << 1 | bitM[i];
         }
+        return (char)unicode_value;
+    }
+
+    public char[] decodeOutput() {
+        char[] output = new char[4];
+        for( int i = 0 ; i < 4 ; i ++) {
+            output[i] = convertBinaryToUnicode(i*16, i*16+16);
+        }
+        return output;
+    }
+
+    private int getHexValue(int ch) {
+        if( ch <= '9' &&  ch >= '0' ) {
+            return ch - '0';
+        } else {
+          switch (ch) {
+              case 'A':return 10;
+              case 'B':return 11;
+              case 'C':return 12;
+              case 'D':return 13;
+              case 'E':return 14;
+              case 'F':return 15;
+          }
+        }
+        return -1;
+    }
+
+    private void convertHexToBinary(char ch, int round) {
+        int hex_value = getHexValue(ch);
+        for( int i = 3, j = 0; i >= 0 ; i--, j++ ) {
+            bitM[round*4 + j] = (byte)((hex_value >> i) & 1);
+        }
+    }
+
+
+    public void phrase_decode_message() {
+        for( int i = 0; i < 16 ; i ++ ) {
+            convertHexToBinary(buf[i], i);
+        }
+    }
+
+    public void encode_update() {
+        if( !encode_checkFull() ) {
+            encode_load();
+            phrase_encode_message();
+        }
+    }
+
+    public void decode_update() {
+        if(!decode_checkFull()) {
+            decode_load();
+            phrase_decode_message();
+        }
+    }
+
+    boolean encode_checkFull() {
+        return round >= (int)Math.ceil(data.length / 4.0); // 向上取整
+    }
+
+    boolean decode_checkFull() {
+        return round >= (int)Math.ceil(data.length / 16.0); // 向上取整
     }
 
 

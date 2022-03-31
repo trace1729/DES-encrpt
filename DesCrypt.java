@@ -103,7 +103,6 @@ public class DesCrypt {
     //  加密主函数
     public static void encrypt(Message m, Key k, boolean encrypt) {
         DesCrypt.generateKey(k);
-
         m.setBitM(permute(m.getBitM(), m.getBitM().length, Data.IP));
 
         byte[] LPT_old = new byte[32];
@@ -131,31 +130,6 @@ public class DesCrypt {
 
     public static void main(String[] args) {
 
-        StringBuilder st = new StringBuilder(100);
-        Key k = new Key(); k.Update();
-        Message m = new Message();
-        while( !m.checkFull() ) {
-            m.Update();
-            encrypt(m, k, true);
-            char[] temp = m.BinaryToChar();
-            for( char t : temp) {
-                st.append(t);
-            }
-        }
-        // 密文需要删除 x 加密后的字符
-        // 但是解密的时候 需要加上 x 加密后的字符才能 解密回去
-        // 不需要担心这个问题 加密的密文格式是由自己确定的 只要能解密回去就可以
-        Message m2 = new Message(st.toString().toCharArray());
-        while( !m2.checkFull() ) {
-            m2.Update();
-            encrypt(m2, k, false);
-            char[] temp = m2.BinaryToChar();
-            for( char t : temp) {
-                st.append(t);
-            }
-        }
-        st.replace(st.length() - m.surplus, st.length(), "");
-        System.out.println(m2.surplus +  " " + st.toString());
     }
 
 }

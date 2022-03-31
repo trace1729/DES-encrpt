@@ -10,14 +10,15 @@ public class Key extends Message {
     }
 
     private void load() {
-        System.arraycopy(data, 0, buf, 0, 8);
+        System.arraycopy(data, 0, buf, 0, 4);
         // 修改编码方式后需要修改长度
     }
 
     public void Update() {
         load();
-        CharToBinary(); // 如果要修改编码方式 那么 需要修改这个函数
+        phrase_encode_message();
         this.setBitM(DesCrypt.permute(bitM, bitM.length, Data.PC1));
+
     }
 
 

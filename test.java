@@ -3,6 +3,8 @@ package DES;
 
 import org.junit.Test;
 
+import java.io.*;
+
 
 public class test {
     @Test
@@ -15,24 +17,26 @@ public class test {
         while( !m.encode_checkFull() ) {
             m.encode_update();
             DesCrypt.encrypt(m, k, true);
+            m.print();
             for( char ch : m.encodeOutput()) {
                 st.append(ch);
             }
         }
 
-        Message m2 = new Message(st.toString().toCharArray());
-        st = new StringBuilder();
-        while( !m2.decode_checkFull() ) {
-            m2.decode_update();
-            DesCrypt.encrypt(m2, k, false);
-            for( char ch : m2.decodeOutput()) {
-                st.append(ch);
-            }
-        }
         System.out.println(st.toString());
     }
     @Test
-    public void tes2 () {
-        System.out.println(Integer.toBinaryString('中'));
+    public void IO () {
+        try {
+            FileOutputStream filestream = new FileOutputStream("MyGame.ser");
+            ObjectOutputStream os = new ObjectOutputStream(filestream);
+            os.writeObject(new Integer(1));
+            os.writeObject(new Integer(1));
+            os.writeObject(new Integer(1));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
     }
+
 }

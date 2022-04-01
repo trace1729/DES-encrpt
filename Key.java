@@ -10,13 +10,22 @@ public class Key extends Message {
     }
 
     private void load() {
-        System.arraycopy(data, 0, buf, 0, 4);
+        if(data.length >= 4)
+            System.arraycopy(data, 0, buf, 0, 4);
         // 修改编码方式后需要修改长度
+        else
+            System.arraycopy(data, 0, buf, 0, data.length);
     }
 
     public void Update() {
         load();
         phrase_encode_message();
+        // 密匙不足 以0补齐
+        if( data.length <= 4 ) {
+            for( int i =  data.length*16 ; i < bitM.length ; i++ ) {
+                bitM[i] = (byte)0;
+            }
+        }
         this.setBitM(DesCrypt.permute(bitM, bitM.length, Data.PC1));
 
     }

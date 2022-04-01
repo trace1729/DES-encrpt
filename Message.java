@@ -1,9 +1,6 @@
 package DES;
 
 
-import javax.print.DocFlavor;
-import java.awt.*;
-
 public class Message {
     final char COMPLEMENT = 'x';
     // store all info
@@ -24,9 +21,11 @@ public class Message {
     void setBitM(byte[] bitM) {
         this.bitM = bitM;
     }
-
+    /*
+    Default Constructor
+     */
     Message () {
-        String m = "ewekwekwkekwkekwkekwekwe";
+        String m = "中华文化";
         data = m.toCharArray();
         buf = new char[16]; // encode 4bit  decode need 16
         // bit
@@ -36,6 +35,10 @@ public class Message {
         round = 0;
     }
 
+    /**
+     *
+     * @param d 明文
+     */
     Message (char[] d) {
         data = d;
         buf = new char[16];
@@ -45,6 +48,9 @@ public class Message {
         round = 0;
     }
 
+    /**
+     *  重载 加密输入
+     */
     private void encode_load() {
         if( idx > data.length ) {
             return;
@@ -65,7 +71,9 @@ public class Message {
 
     }
 
-    // 不需要考虑位数不足的情况，在加密的时候已经补齐
+    /**
+     * 重载 解密输入
+     */
     private void decode_load() {
         if( idx >= data.length ) {
             return;
@@ -77,19 +85,32 @@ public class Message {
         }
     }
 
+    /**
+     *
+     * @param ch 用于转换的字符 (unicode to bits)
+     * @param round 加密的轮次 (4组为一轮)
+     */
     private void convertUnicodeToBinary(char ch, int round) {
         for( int i = 15, j = 0 ; i >= 0 ; i--, j++ ) {
             bitM[ round*16+j ] = (byte)(ch >> i & 1);
         }
     }
 
-
+    /**
+     *  解析加密输入
+     */
     public void phrase_encode_message() {
         for( int i = 0 ; i < 4 ; i ++ ) {
             convertUnicodeToBinary(buf[i], i);
         }
     }
 
+    /**
+     *
+     * @param l 解析bitM数组的左边界
+     * @param r 解析bitM数组范围的右边界
+     * @return 返回 r-l 这4位二进制位所对应的 16进制 数值
+     */
     private char convertBinaryToHex(int l, int r) {
         int hex_value = 0;
         for(int i = l ; i < r ; i ++) {
@@ -98,6 +119,9 @@ public class Message {
         return Data.hex[hex_value];
     }
 
+    /**
+     * @return 加密输出
+     */
     public char[] encodeOutput() {
         char[] output = new char[16];
         for( int i = 0 ; i < 16 ; i ++) {
@@ -106,23 +130,15 @@ public class Message {
         return output;
     }
 
-    private char convertBinaryToUnicode(int l, int r) {
-        int unicode_value = 0;
-        for (int i = l ; i < r ; i ++) {
-            unicode_value = unicode_value << 1 | bitM[i];
-        }
-        return (char)unicode_value;
-    }
 
-    public char[] decodeOutput() {
-        char[] output = new char[4];
-        for( int i = 0 ; i < 4 ; i ++) {
-            output[i] = convertBinaryToUnicode(i*16, i*16+16);
-        }
-        return output;
-    }
-
+    /**
+     *
+     * @param ch 十六进制字符
+     * @return ch 对应的十进制值
+     * 或许java 有对应的方法。。
+     */
     private int getHexValue(int ch) {
+
         if( ch <= '9' &&  ch >= '0' ) {
             return ch - '0';
         } else {
@@ -145,12 +161,39 @@ public class Message {
         }
     }
 
-
+    /**
+     *  解析解密输出 hex -> bits
+     */
     public void phrase_decode_message() {
         for( int i = 0; i < 16 ; i ++ ) {
             convertHexToBinary(buf[i], i);
         }
     }
+
+
+    private char convertBinaryToUnicode(int l, int r) {
+        int unicode_value = 0;
+        for (int i = l ; i < r ; i ++) {
+            unicode_value = unicode_value << 1 | bitM[i];
+        }
+        return (char)unicode_value;
+    }
+
+    /**
+     * @return 解密输出
+     */
+
+    public char[] decodeOutput() {
+        char[] output = new char[4];
+        for( int i = 0 ; i < 4 ; i ++) {
+            output[i] = convertBinaryToUnicode(i*16, i*16+16);
+        }
+        return output;
+    }
+
+    /**
+     * 更新 buf数组内容 开始下一block的加密
+     */
 
     public void encode_update() {
         if( !encode_checkFull() ) {
@@ -158,6 +201,10 @@ public class Message {
             phrase_encode_message();
         }
     }
+
+    /**
+     * 更新 buf数组内容 开始下一block的解密
+     */
 
     public void decode_update() {
         if(!decode_checkFull()) {

@@ -128,9 +128,5 @@ public class DesCrypt {
         m.setBitM(permute(m.getBitM(), m.getBitM().length, Data.IPReverse));
     }
 
-    public static void main(String[] args) {
-
-    }
-
 }
 

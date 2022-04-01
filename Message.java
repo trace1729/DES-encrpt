@@ -1,25 +1,27 @@
 package DES;
 
 
-public class Message {
+public class Message implements mess{
     final char COMPLEMENT = 'x';
     // store all info
     char[] data;
     // store 8 character
     char[] buf;
     // store bitwise info
-    byte [] bitM;
+    private byte [] bitM;
     // mark location
     int idx;
     int surplus;
     int round;
 
-    byte[] getBitM() {
+    @Override
+    public byte[] getBitM() {
         return bitM;
     }
 
-    void setBitM(byte[] bitM) {
-        this.bitM = bitM;
+    @Override
+    public void setBitM(byte[] bits) {
+        this.bitM = bits;
     }
     /*
     Default Constructor
@@ -221,7 +223,7 @@ public class Message {
         return round >= (int)Math.ceil(data.length / 16.0); // 向上取整
     }
 
-
+    @Override
     public void print() {
         for( int i = 0 ; i < 8 ; i ++) {
             for( int j = 0 ; j < 8 ; j ++ ) {

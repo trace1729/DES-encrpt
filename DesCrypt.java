@@ -101,7 +101,7 @@ public class DesCrypt {
         return t;
     }
     //  加密主函数
-    public static void encrypt(Message m, Key k, boolean encrypt) {
+    public static void encrypt(mess m, Key k, boolean encrypt) {
         DesCrypt.generateKey(k);
         m.setBitM(permute(m.getBitM(), m.getBitM().length, Data.IP));
 

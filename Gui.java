@@ -1,5 +1,6 @@
 package DES;
 
+
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
@@ -7,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.io.File;
+import java.util.Arrays;
 
 public class Gui {
     JFrame frame;
@@ -90,16 +92,6 @@ public class Gui {
         taOutput = (JTextArea)p3.getComponent(1);
     }
 
-    public void loadFile(String filename) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));
-
-        } catch ( IOException ex) {
-            System.out.println("Sorry, can not open file at" + filename);
-            ex.printStackTrace();
-        }
-
-    }
 
     class openEventListener implements ActionListener {
         @Override
@@ -127,28 +119,29 @@ public class Gui {
     class encode_fileListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            StringBuilder st = new StringBuilder();
             JTextField tfK = (JTextField)p2.getComponent(1);
             JTextArea tka = (JTextArea) p3.getComponent(1);
             if( filename != null ) {
                 try {
                     // init
                     File input_file = new File(filename);
-                    File outputFile = new File(filename+"encrypt");
+                    File outputFile = new File(filename);
                     // read
                     FileInputStream os = new FileInputStream(input_file);
                     byte[] input_bytes = new byte[(int) input_file.length()];
+                    byte[] outputBytes = new byte[(int) input_file.length() + 10];
                     os.read(input_bytes);
                     // write
-
-
-
-
-
-
-
-
-                    byte[] outputBytes = new byte[10];
+                    Message_file m = new Message_file(input_bytes);
+                    Key k = new Key(tfK.getText().toCharArray());
+                    int idx = 0;
+                    while( !m.IsFull() ) {
+                        m.Update();
+                        DesCrypt.encrypt(m, k, true);
+                        for( byte b : m.BinaryTobyte() ) {
+                            outputBytes[idx++] = b;
+                        }
+                    }
                     FileOutputStream outputStream = new FileOutputStream(outputFile);
                     outputStream.write(outputBytes);
 
@@ -156,7 +149,6 @@ public class Gui {
                     outputStream.close();
 
                 } catch (IOException ex) {
-
                     ex.printStackTrace();
                 }
             } else {
@@ -171,6 +163,48 @@ public class Gui {
         public void actionPerformed(ActionEvent e) {
             StringBuilder st = new StringBuilder();
             JTextField tfK = (JTextField)p2.getComponent(1);
+            JTextArea tka = (JTextArea) p3.getComponent(1);
+
+            if( filename != null ) {
+                try {
+                    // init
+                    File input_file = new File(filename);
+                    File outputFile = new File(filename);
+
+                    // read
+                    FileInputStream os = new FileInputStream(input_file);
+                    byte[] input_bytes = new byte[(int) input_file.length()];
+                    byte[] outputBytes = new byte[(int) input_file.length() + 10];
+                    os.read(input_bytes);
+
+
+                    // write
+                    Message_file m = new Message_file(input_bytes);
+                    Key k = new Key(tfK.getText().toCharArray());
+                    int idx = 0;
+                    while( !m.IsFull() ) {
+                        m.Update();
+                        DesCrypt.encrypt(m, k, false);
+                        for( byte b : m.BinaryTobyte() ) {
+                            outputBytes[idx++] = b;
+                        }
+                    }
+                    byte[] output = Arrays.copyOf(outputBytes, idx - (int)outputBytes[idx-1]);
+                    FileOutputStream outputStream = new FileOutputStream(outputFile);
+                    outputStream.write(output);
+
+                    os.close();
+                    outputStream.close();
+                    tka.setText("文件解密完成");
+
+                } catch (IOException ex) {
+
+                    ex.printStackTrace();
+                }
+            } else {
+                tka.setText("请先打开一个文件");
+            }
+
         }
     }
 

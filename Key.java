@@ -2,11 +2,15 @@ package DES;
 
 public class Key extends Message {
 
+    private byte[] bitM;
+
     public Key() {
         super();
+        bitM = new byte[64];
     }
     public Key(char[] t) {
         super(t);
+        bitM = new byte[64];
     }
 
     private void load() {

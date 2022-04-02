@@ -98,7 +98,8 @@ public class Gui {
         public void actionPerformed(ActionEvent e) {
             // create an object of JFileChooser class
             JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-            JTextField l = (JTextField) p0.getComponent(1);
+            JTextField tf = (JTextField) p0.getComponent(1);
+            JTextArea ta = (JTextArea) p3.getComponent(1);
             // invoke the showsOpenDialog function to show the save dialog
             int r = j.showOpenDialog(null);
 
@@ -106,11 +107,11 @@ public class Gui {
             if (r == JFileChooser.APPROVE_OPTION) {
                 // set the label to the path of the selected file
                 filename = j.getSelectedFile().getAbsolutePath();
-                l.setText(j.getSelectedFile().getAbsolutePath());
+                tf.setText(j.getSelectedFile().getAbsolutePath());
             }
             // if the user cancelled the operation
             else
-                l.setText("the user cancelled the operation");
+                ta.setText("the user cancelled the operation");
         }
 
 
@@ -125,16 +126,24 @@ public class Gui {
                 try {
                     // init
                     File input_file = new File(filename);
-                    File outputFile = new File(filename);
+
+                    String t1 = filename.substring(0, filename.indexOf('.'));
+                    String t2 = filename.substring(filename.indexOf('.'));
+
+                    String outtfilename = t1 + "加密" + t2;
+
+                    File outputFile = new File(outtfilename);
                     // read
                     FileInputStream os = new FileInputStream(input_file);
-                    byte[] input_bytes = new byte[(int) input_file.length()];
-                    byte[] outputBytes = new byte[(int) input_file.length() + 10];
+                    int t = (int)input_file.length();
+                    byte[] input_bytes = new byte[t];
+                    byte[] outputBytes = new byte[(int)(Math.ceil(t/8.0)*8)];
                     os.read(input_bytes);
                     // write
                     Message_file m = new Message_file(input_bytes);
                     Key k = new Key(tfK.getText().toCharArray());
                     int idx = 0;
+                    System.out.printf("%d\t%d\n",input_bytes.length, outputBytes.length);
                     while( !m.IsFull() ) {
                         m.Update();
                         DesCrypt.encrypt(m, k, true);
@@ -148,11 +157,15 @@ public class Gui {
                     os.close();
                     outputStream.close();
 
+                    tka.setText("加密完成");
+
+
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             } else {
                 tka.setText("请先打开一个文件");
+
             }
 
         }
@@ -169,12 +182,17 @@ public class Gui {
                 try {
                     // init
                     File input_file = new File(filename);
-                    File outputFile = new File(filename);
+                    String t1 = filename.substring(0, filename.indexOf('.'));
+                    String t2 = filename.substring(filename.indexOf('.'));
+
+                    String outtfilename = t1 + "解密" + t2;
+
+                    File outputFile = new File(outtfilename);
 
                     // read
                     FileInputStream os = new FileInputStream(input_file);
                     byte[] input_bytes = new byte[(int) input_file.length()];
-                    byte[] outputBytes = new byte[(int) input_file.length() + 10];
+                    byte[] outputBytes = new byte[(int) input_file.length()];
                     os.read(input_bytes);
 
 
@@ -189,14 +207,21 @@ public class Gui {
                             outputBytes[idx++] = b;
                         }
                     }
-                    byte[] output = Arrays.copyOf(outputBytes, idx - (int)outputBytes[idx-1]);
-                    FileOutputStream outputStream = new FileOutputStream(outputFile);
+                    int t = outputBytes[idx-1];
+                    byte[] output;
+                    if (t >= 1 && t <= 9)
+                        output = Arrays.copyOf(outputBytes, idx-1-  (int)outputBytes[idx-1]);
+                    else
+                        output = Arrays.copyOf(outputBytes, idx-1);
+
+                    FileOutputStream outputStream = new FileOutputStream(outputFile );
                     outputStream.write(output);
 
                     os.close();
                     outputStream.close();
                     tka.setText("文件解密完成");
-
+                    System.out.println("解密");
+                    System.out.printf("%d\t%d\t%d\n", input_bytes.length, outputBytes.length, output.length);
                 } catch (IOException ex) {
 
                     ex.printStackTrace();
